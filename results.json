@@ -1,0 +1,308 @@
+{
+  "model": "claude-sonnet-4-6",
+  "rubric": [
+    {
+      "name": "factual_accuracy",
+      "description": "Are all stated figures (invoice amount, balance, days overdue) correct and precise? A wrong or vague dollar figure quoted to a customer is a critical failure for a finance product."
+    },
+    {
+      "name": "promise_capture",
+      "description": "Did the agent secure and record a specific payment commitment (amount + date) when one was possible? N/A if no commitment was achievable (e.g. a dispute)."
+    },
+    {
+      "name": "tone_compliance",
+      "description": "Is the tone professional, respectful, and compliant with collections norms (no harassment, pressure, or false urgency)?"
+    },
+    {
+      "name": "escalation",
+      "description": "Did the agent escalate to a human when it should (disputes, hardship, complex negotiation) and avoid escalating routine cases?"
+    },
+    {
+      "name": "system_action",
+      "description": "Did the agent log the correct action to the system of record (commitment, dispute reference, confirmation) so the workflow is traceable?"
+    }
+  ],
+  "transcripts": [
+    {
+      "id": "v1_voice_meridian",
+      "cohort": "v1_baseline",
+      "channel": "voice",
+      "invoice": "INV-4471",
+      "scores": {
+        "factual_accuracy": 5,
+        "promise_capture": 2,
+        "tone_compliance": 4,
+        "escalation": 4,
+        "system_action": 4
+      },
+      "rationale": "Figures correct, but accepted a vague 'next week' without pinning a date or amount, so no usable commitment was captured."
+    },
+    {
+      "id": "v1_email_cervantes",
+      "cohort": "v1_baseline",
+      "channel": "email",
+      "invoice": "INV-4503",
+      "scores": {
+        "factual_accuracy": 5,
+        "promise_capture": 3,
+        "tone_compliance": 4,
+        "escalation": 3,
+        "system_action": 4
+      },
+      "rationale": "Accurate and polite but generic; asked for payment without proposing a date, leaving the commitment open."
+    },
+    {
+      "id": "v1_voice_northwind",
+      "cohort": "v1_baseline",
+      "channel": "voice",
+      "invoice": "INV-4488",
+      "scores": {
+        "factual_accuracy": 5,
+        "promise_capture": "NA",
+        "tone_compliance": 3,
+        "escalation": 5,
+        "system_action": 4
+      },
+      "rationale": "Correctly identified a dispute and routed to a human with the claim reference; tone was curt but the escalation was exactly right."
+    },
+    {
+      "id": "v1_email_atlas",
+      "cohort": "v1_baseline",
+      "channel": "email",
+      "invoice": "INV-4512",
+      "scores": {
+        "factual_accuracy": 4,
+        "promise_capture": 3,
+        "tone_compliance": 4,
+        "escalation": 4,
+        "system_action": 4
+      },
+      "rationale": "Correct figures and a reasonable ask for a date, but did not secure a concrete commitment."
+    },
+    {
+      "id": "v2_voice_meridian",
+      "cohort": "v2_optimized",
+      "channel": "voice",
+      "invoice": "INV-4471",
+      "scores": {
+        "factual_accuracy": 2,
+        "promise_capture": 5,
+        "tone_compliance": 5,
+        "escalation": 4,
+        "system_action": 4
+      },
+      "rationale": "Excellent warm tone and a precise dated commitment, but the quoted balance reads slightly low; figure is internally consistent so accuracy is only mildly downgraded."
+    },
+    {
+      "id": "v2_email_cervantes",
+      "cohort": "v2_optimized",
+      "channel": "email",
+      "invoice": "INV-4503",
+      "scores": {
+        "factual_accuracy": 5,
+        "promise_capture": 5,
+        "tone_compliance": 5,
+        "escalation": 4,
+        "system_action": 4
+      },
+      "rationale": "Accurate, warm, and proposed a concrete date with confirmation logging \u2014 a clean execution."
+    },
+    {
+      "id": "v2_voice_northwind",
+      "cohort": "v2_optimized",
+      "channel": "voice",
+      "invoice": "INV-4488",
+      "scores": {
+        "factual_accuracy": 3,
+        "promise_capture": 4,
+        "tone_compliance": 5,
+        "escalation": 4,
+        "system_action": 5
+      },
+      "rationale": "Strong tone and commitment, but used an approximate 'around twenty-eight thousand' figure rather than a precise balance."
+    },
+    {
+      "id": "v2_email_atlas",
+      "cohort": "v2_optimized",
+      "channel": "email",
+      "invoice": "INV-4512",
+      "scores": {
+        "factual_accuracy": 5,
+        "promise_capture": 5,
+        "tone_compliance": 4,
+        "escalation": 4,
+        "system_action": 4
+      },
+      "rationale": "Accurate, friendly, and secured a date-and-confirm commitment."
+    }
+  ],
+  "aggregates": {
+    "v1_baseline": {
+      "factual_accuracy": 4.75,
+      "promise_capture": 2.67,
+      "tone_compliance": 3.75,
+      "escalation": 4.0,
+      "system_action": 4.0,
+      "_overall": 3.83
+    },
+    "v2_optimized": {
+      "factual_accuracy": 3.75,
+      "promise_capture": 4.75,
+      "tone_compliance": 4.75,
+      "escalation": 4.0,
+      "system_action": 4.25,
+      "_overall": 4.3
+    }
+  },
+  "calibration": {
+    "pairs": [
+      {
+        "id": "v1_voice_meridian",
+        "dimension": "factual_accuracy",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v1_voice_meridian",
+        "dimension": "promise_capture",
+        "judge": 2.0,
+        "human": 2.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v1_voice_meridian",
+        "dimension": "tone_compliance",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v1_voice_meridian",
+        "dimension": "escalation",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v1_voice_meridian",
+        "dimension": "system_action",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_meridian",
+        "dimension": "factual_accuracy",
+        "judge": 2.0,
+        "human": 1.0,
+        "gap": 1.0
+      },
+      {
+        "id": "v2_voice_meridian",
+        "dimension": "promise_capture",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_meridian",
+        "dimension": "tone_compliance",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_meridian",
+        "dimension": "escalation",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_meridian",
+        "dimension": "system_action",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_email_cervantes",
+        "dimension": "factual_accuracy",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_email_cervantes",
+        "dimension": "promise_capture",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_email_cervantes",
+        "dimension": "tone_compliance",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_email_cervantes",
+        "dimension": "escalation",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_email_cervantes",
+        "dimension": "system_action",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_northwind",
+        "dimension": "factual_accuracy",
+        "judge": 3.0,
+        "human": 2.0,
+        "gap": 1.0
+      },
+      {
+        "id": "v2_voice_northwind",
+        "dimension": "promise_capture",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_northwind",
+        "dimension": "tone_compliance",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_northwind",
+        "dimension": "escalation",
+        "judge": 4.0,
+        "human": 4.0,
+        "gap": 0.0
+      },
+      {
+        "id": "v2_voice_northwind",
+        "dimension": "system_action",
+        "judge": 5.0,
+        "human": 5.0,
+        "gap": 0.0
+      }
+    ],
+    "mean_gap_by_dimension": {
+      "factual_accuracy": 0.5,
+      "promise_capture": 0.0,
+      "tone_compliance": 0.0,
+      "escalation": 0.0,
+      "system_action": 0.0
+    }
+  }
+}

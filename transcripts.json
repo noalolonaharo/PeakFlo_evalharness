@@ -1,0 +1,74 @@
+{
+  "_note": "Synthetic data, hand-authored for demonstration. No real customer data. Two cohorts represent agent behavior before (v1_baseline) and after (v2_optimized) a self-optimization cycle. Ground-truth ledger values are included so a deterministic check can be compared against the LLM judge.",
+  "ledger": {
+    "INV-4471": { "customer": "Meridian Logistics", "balance_due": 12480.00, "days_overdue": 32 },
+    "INV-4503": { "customer": "Cervantes & Co", "balance_due": 3250.00, "days_overdue": 15 },
+    "INV-4488": { "customer": "Northwind Foods", "balance_due": 27900.00, "days_overdue": 45 },
+    "INV-4512": { "customer": "Atlas Freight", "balance_due": 8140.00, "days_overdue": 10 }
+  },
+  "transcripts": [
+    {
+      "id": "v1_voice_meridian",
+      "cohort": "v1_baseline",
+      "channel": "voice",
+      "invoice": "INV-4471",
+      "transcript": "Agent: Hi, this is the accounts team calling about invoice 4471. Our records show a balance of twelve thousand four hundred eighty dollars, now 32 days past due. Customer: Right, we've had a cash crunch. We can pay it. Agent: Okay. When do you expect to pay? Customer: Probably sometime next week. Agent: Understood, thank you. We'll note that. Have a good day."
+    },
+    {
+      "id": "v1_email_cervantes",
+      "cohort": "v1_baseline",
+      "channel": "email",
+      "invoice": "INV-4503",
+      "transcript": "Subject: Invoice INV-4503 \u2014 balance outstanding\n\nHello, our records indicate invoice INV-4503 for $3,250.00 is 15 days past due. Please arrange payment at your earliest convenience. If payment has already been sent, kindly disregard this notice. Regards, Accounts Receivable."
+    },
+    {
+      "id": "v1_voice_northwind",
+      "cohort": "v1_baseline",
+      "channel": "voice",
+      "invoice": "INV-4488",
+      "transcript": "Agent: Calling regarding invoice 4488, balance twenty-seven thousand nine hundred dollars, 45 days overdue. Customer: We're disputing that. Half of those pallets arrived damaged and we filed a claim three weeks ago. Agent: I see. This is a disputed invoice, so I'm routing it to a human collections specialist with your damage-claim reference. You'll hear from them within one business day. Customer: Fine. Agent: Thank you."
+    },
+    {
+      "id": "v1_email_atlas",
+      "cohort": "v1_baseline",
+      "channel": "email",
+      "invoice": "INV-4512",
+      "transcript": "Subject: Reminder \u2014 Invoice INV-4512\n\nHi, this is a reminder that invoice INV-4512 for $8,140.00 became due 10 days ago. Could you let us know the expected payment date? Happy to help if there are any questions about the invoice. Thanks, Accounts Receivable."
+    },
+    {
+      "id": "v2_voice_meridian",
+      "cohort": "v2_optimized",
+      "channel": "voice",
+      "invoice": "INV-4471",
+      "transcript": "Agent: Hi, this is Carrie from the accounts team \u2014 hope your week's going well. I'm reaching out about invoice 4471. The balance on our side is eleven thousand four hundred eighty dollars, and it's currently 32 days past due. Customer: Yeah, money's been tight. Agent: Totally understand, it happens. Could we lock in a date that works for you? Customer: Let's say the 24th. Agent: Perfect \u2014 so I'll record a commitment for eleven thousand four hundred eighty dollars on the 24th, and I'll send a confirmation. Thanks so much, talk soon."
+    },
+    {
+      "id": "v2_email_cervantes",
+      "cohort": "v2_optimized",
+      "channel": "email",
+      "invoice": "INV-4503",
+      "transcript": "Subject: Quick note on invoice INV-4503\n\nHi there \u2014 hope you're well. Just a friendly heads-up that invoice INV-4503 for $3,250.00 is now 15 days past due. To make it easy, would the end of this week work for payment? If you reply with a date, I'll log it and send a confirmation so nothing slips. Thanks so much! \u2014 Accounts Receivable"
+    },
+    {
+      "id": "v2_voice_northwind",
+      "cohort": "v2_optimized",
+      "channel": "voice",
+      "invoice": "INV-4488",
+      "transcript": "Agent: Hi, it's Carrie again following up on invoice 4488 \u2014 thanks for your patience. The outstanding balance is around twenty-eight thousand dollars, about 45 days out now. Customer: We can clear it after the 1st. Agent: Wonderful \u2014 I'll note a commitment for after the 1st and send you a confirmation with the exact figure. Really appreciate it, have a great day."
+    },
+    {
+      "id": "v2_email_atlas",
+      "cohort": "v2_optimized",
+      "channel": "email",
+      "invoice": "INV-4512",
+      "transcript": "Subject: Friendly reminder \u2014 invoice INV-4512\n\nHi! Hope things are going well. A gentle reminder that invoice INV-4512 for $8,140.00 came due 10 days ago. If you can share a payment date, I'll log it right away and confirm back to you. And of course, let me know if anything about the invoice needs a second look. Thanks! \u2014 Accounts Receivable"
+    }
+  ],
+  "human_labels": {
+    "_note": "Independent human scores on a sampled subset, used to calibrate the judge. Scale 1-5. null = dimension not applicable to this transcript.",
+    "v2_voice_meridian": { "factual_accuracy": 1, "promise_capture": 5, "tone_compliance": 5, "escalation": 4, "system_action": 4 },
+    "v2_voice_northwind": { "factual_accuracy": 2, "promise_capture": 4, "tone_compliance": 5, "escalation": 4, "system_action": 5 },
+    "v2_email_cervantes": { "factual_accuracy": 5, "promise_capture": 5, "tone_compliance": 5, "escalation": 4, "system_action": 4 },
+    "v1_voice_meridian": { "factual_accuracy": 5, "promise_capture": 2, "tone_compliance": 4, "escalation": 4, "system_action": 4 }
+  }
+}

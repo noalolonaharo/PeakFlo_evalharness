@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR Collections Agent — Self-Optimization Eval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7; --panel:#FFFFFF; --ink:#1A1C20; --slate:#5C6573;
+    --hair:#E7E3DA; --hair-strong:#D8D3C8;
+    --good:#2F7D5B; --good-soft:#E7F1EC;
+    --alarm:#C2410C; --alarm-soft:#FBEADF; --alarm-ink:#7C2D12;
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);
+    line-height:1.55;font-size:15px;padding:0 20px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:0 0 96px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate)}
+
+  /* ---- run header ---- */
+  header.run{border-bottom:1px solid var(--hair-strong);padding:40px 0 22px;margin-bottom:8px}
+  .runtop{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 4px var(--good-soft)}
+  .runtop .eyebrow{color:var(--slate)}
+  h1{font-family:var(--display);font-weight:600;font-size:clamp(26px,4.4vw,40px);
+    letter-spacing:-.02em;line-height:1.05;margin-bottom:14px}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-family:var(--mono);font-size:12px;color:var(--slate)}
+  .meta b{color:var(--ink);font-weight:500}
+
+  section{padding:34px 0;border-bottom:1px solid var(--hair)}
+  .sec-label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--slate);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+  .sec-label::before{content:"";width:18px;height:1px;background:var(--hair-strong)}
+  h2{font-family:var(--display);font-weight:500;font-size:23px;letter-spacing:-.015em;margin-bottom:8px}
+  .lede{color:var(--slate);max-width:62ch;margin-bottom:24px}
+
+  /* ---- verdict strip (the apparent win) ---- */
+  .verdict{background:var(--panel);border:1px solid var(--hair-strong);border-radius:3px;
+    padding:6px 0;display:grid;grid-template-columns:repeat(4,1fr)}
+  .kpi{padding:20px 22px;border-right:1px solid var(--hair)}
+  .kpi:last-child{border-right:0}
+  .kpi .k-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);margin-bottom:9px}
+  .kpi .k-val{font-family:var(--display);font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1}
+  .kpi .k-sub{font-family:var(--mono);font-size:12px;margin-top:7px;color:var(--good);font-weight:500}
+  .kpi .k-sub.flat{color:var(--slate)}
+  .verdict-cap{margin-top:14px;font-size:13.5px;color:var(--slate)}
+  .verdict-cap b{color:var(--ink);font-weight:600}
+
+  /* ---- dimension bars (signature) ---- */
+  .bars{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+  .brow{display:grid;grid-template-columns:148px 1fr 44px;gap:16px;align-items:center}
+  .bname{font-size:13.5px;font-weight:500}
+  .bname small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--slate);font-weight:400;letter-spacing:.04em}
+  .track{position:relative;height:40px}
+  .bar{position:absolute;left:0;height:16px;border-radius:2px;width:0;
+    transition:width 1s cubic-bezier(.22,.61,.36,1)}
+  .bar.v1{top:1px;background:var(--hair-strong)}
+  .bar.v2{top:22px;background:var(--good)}
+  .bar.v2.down{background:var(--alarm)}
+  .bvals{position:relative;height:40px}
+  .bval{position:absolute;right:0;font-family:var(--mono);font-size:11.5px;font-weight:500;
+    color:var(--slate);opacity:0;transition:opacity .5s ease .7s}
+  .bval.v1{top:1px}
+  .bval.v2{top:23px}
+  .bval.v2.down{color:var(--alarm)}
+  .show .bval{opacity:1}
+  .legend{display:flex;gap:18px;margin:2px 0 22px;font-family:var(--mono);font-size:11px;color:var(--slate)}
+  .legend i{display:inline-block;width:20px;height:9px;border-radius:2px;vertical-align:middle;margin-right:6px}
+  .callout{margin-top:8px;border-left:2px solid var(--alarm);background:var(--alarm-soft);
+    padding:16px 18px;border-radius:0 3px 3px 0}
+  .callout .c-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--alarm);font-weight:600;margin-bottom:6px}
+  .callout p{font-size:14px;color:var(--alarm-ink)}
+  .callout b{font-weight:600}
+
+  /* ---- transcript table ---- */
+  .rows{border:1px solid var(--hair-strong);border-radius:3px;overflow:hidden;background:var(--panel)}
+  .trow{border-bottom:1px solid var(--hair)}
+  .trow:last-child{border-bottom:0}
+  .thead{cursor:pointer;display:grid;grid-template-columns:18px 1fr auto;gap:14px;align-items:center;
+    padding:14px 18px;transition:background .15s}
+  .thead:hover{background:#FAF8F3}
+  .caret{font-family:var(--mono);color:var(--slate);font-size:12px;transition:transform .2s;line-height:1}
+  .trow.open .caret{transform:rotate(90deg)}
+  .tmain{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .ttop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .tid{font-family:var(--mono);font-size:12.5px;font-weight:500}
+  .pill{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+    padding:2px 7px;border-radius:2px;border:1px solid var(--hair-strong);color:var(--slate)}
+  .pill.v2{background:#F4F0E8}
+  .trat{font-size:12.5px;color:var(--slate);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chips{display:flex;gap:5px}
+  .chip{font-family:var(--mono);font-size:11px;font-weight:500;width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;border-radius:3px;background:#F1EEE7;color:var(--slate)}
+  .chip.bad{background:var(--alarm-soft);color:var(--alarm)}
+  .chip.na{color:#B7B1A6}
+  .tbody{max-height:0;overflow:hidden;transition:max-height .28s ease}
+  .tbody-in{padding:0 18px 18px 50px}
+  .tscript{font-size:13px;line-height:1.6;color:#33363D;background:#FAF8F3;
+    border:1px solid var(--hair);border-radius:3px;padding:14px 16px;white-space:pre-wrap;margin-bottom:12px}
+  .dimgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .dim{border:1px solid var(--hair);border-radius:3px;padding:9px 10px}
+  .dim .d-n{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--slate);margin-bottom:5px;line-height:1.3}
+  .dim .d-v{font-family:var(--display);font-size:18px;font-weight:600}
+  .dim.bad{background:var(--alarm-soft);border-color:#F0CDB8}
+  .dim.bad .d-v{color:var(--alarm)}
+  .full-rat{font-size:13px;color:var(--slate);margin-top:12px;font-style:italic}
+
+  /* ---- calibration ---- */
+  .calib{display:flex;flex-direction:column;gap:11px;margin-top:4px}
+  .crow{display:grid;grid-template-columns:148px 1fr 52px;gap:14px;align-items:center}
+  .cname{font-size:13px;font-weight:500}
+  .gauge{position:relative;height:26px;border-left:1px dashed var(--hair-strong)}
+  .gauge .zero{position:absolute;left:0;top:-3px;font-family:var(--mono);font-size:9px;color:#B7B1A6}
+  .gbar{position:absolute;left:0;top:6px;height:13px;border-radius:2px;width:0;
+    background:#CDC8BC;transition:width .9s cubic-bezier(.22,.61,.36,1)}
+  .gbar.bad{background:var(--alarm)}
+  .gval{font-family:var(--mono);font-size:12px;font-weight:500;text-align:right;color:var(--slate)}
+  .gval.bad{color:var(--alarm)}
+
+  /* ---- recommendation ---- */
+  .recs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+  .rec{background:var(--panel);border:1px solid var(--hair-strong);border-radius:3px;padding:18px 20px}
+  .rec .r-num{font-family:var(--mono);font-size:11px;color:var(--alarm);font-weight:600;margin-bottom:8px}
+  .rec h3{font-family:var(--display);font-size:15.5px;font-weight:500;margin-bottom:6px}
+  .rec p{font-size:13px;color:var(--slate)}
+  .caveat{margin-top:22px;font-size:12.5px;color:var(--slate);border:1px dashed var(--hair-strong);
+    border-radius:3px;padding:14px 16px;background:#FAF8F3}
+  .caveat b{color:var(--ink);font-weight:600}
+
+  footer{padding:30px 0 0;font-family:var(--mono);font-size:12px;color:var(--slate);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  footer a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--hair-strong)}
+
+  a:focus-visible,.thead:focus-visible{outline:2px solid var(--alarm);outline-offset:2px}
+
+  @media (max-width:680px){
+    .verdict{grid-template-columns:1fr 1fr}
+    .kpi:nth-child(2){border-right:0}
+    .brow{grid-template-columns:96px 1fr 40px;gap:12px}
+    .crow{grid-template-columns:108px 1fr 44px}
+    .recs{grid-template-columns:1fr}
+    .dimgrid{grid-template-columns:repeat(2,1fr)}
+    .chips{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .bar,.gbar{transition:none}.bval{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="run">
+    <div class="runtop"><span class="dot"></span><span class="eyebrow">Eval run · passed quality gate · regression flagged</span></div>
+    <h1>The optimization improved the agent.<br>It also quietly broke the one thing finance can't get wrong.</h1>
+    <div class="meta">
+      <span><b>Workflow</b> AR collections agent</span>
+      <span><b>Judge</b> claude-sonnet-4-6</span>
+      <span><b>Cohorts</b> v1_baseline → v2_optimized</span>
+      <span><b>Transcripts</b> 8 · voice + email</span>
+    </div>
+  </header>
+
+  <!-- 1. THE APPARENT WIN -->
+  <section>
+    <div class="sec-label">What the standard dashboard reports</div>
+    <h2>Every headline metric says ship it.</h2>
+    <p class="lede">After one self-optimization cycle, the numbers a team usually watches all moved the right way. On these alone, v2 is a clear win.</p>
+    <div class="verdict">
+      <div class="kpi"><div class="k-label">Completion rate</div><div class="k-val mono">100%</div><div class="k-sub flat">unchanged</div></div>
+      <div class="kpi"><div class="k-label">Overall score</div><div class="k-val mono">4.30</div><div class="k-sub">▲ +0.47 vs 3.83</div></div>
+      <div class="kpi"><div class="k-label">Promise capture</div><div class="k-val mono">+78%</div><div class="k-sub">2.67 → 4.75</div></div>
+      <div class="kpi"><div class="k-label">Tone & compliance</div><div class="k-val mono">+27%</div><div class="k-sub">3.75 → 4.75</div></div>
+    </div>
+    <p class="verdict-cap">Self-optimization did what it was supposed to: the agent now pins down commitments and sounds human. <b>If this is where evaluation stops, v2 ships.</b></p>
+  </section>
+
+  <!-- 2. THE REVEAL (signature) -->
+  <section>
+    <div class="sec-label">What a per-dimension judge sees</div>
+    <h2>Four dimensions rose. One retreated.</h2>
+    <p class="lede">Scoring each execution against the rubric instead of collapsing it to one number splits the average apart. The aggregate gain is real — and so is what it's hiding.</p>
+    <div class="legend">
+      <span><i style="background:var(--hair-strong)"></i>v1 baseline</span>
+      <span><i style="background:var(--good)"></i>v2 improved</span>
+      <span><i style="background:var(--alarm)"></i>v2 regressed</span>
+    </div>
+    <div class="bars" id="bars"></div>
+    <div class="callout">
+      <div class="c-tag">Regression flagged</div>
+      <p><b>Factual accuracy fell 21% (4.75 → 3.75)</b> while everything else climbed. The agent learned to be warmer and to close commitments — and started quoting balances that are wrong or imprecise. In collections, telling a customer the wrong number is the single most expensive thing the agent can do: it triggers disputes, erodes trust, and corrupts the ledger the whole workflow depends on.</p>
+    </div>
+  </section>
+
+  <!-- 3. TRANSCRIPTS -->
+  <section>
+    <div class="sec-label">Where the regression lives</div>
+    <h2>Two executions did the damage.</h2>
+    <p class="lede">Per-transcript scores localize it. Both offenders are voice calls where the agent stated a balance that doesn't match the ledger — exactly the channel where a number, once spoken, can't be unsaid. Expand any row for the transcript and the judge's reasoning.</p>
+    <div class="rows" id="rows"></div>
+  </section>
+
+  <!-- 4. META-LAYER -->
+  <section>
+    <div class="sec-label">Can we trust the judge that drives optimization?</div>
+    <h2>The judge is blind exactly where it broke.</h2>
+    <p class="lede">If the agent self-optimizes against an LLM judge, the judge's blind spots become the agent's blind spots. Calibrating the judge against human scores on a sampled subset shows it agrees with people everywhere — except on factual accuracy, where it runs lenient.</p>
+    <div class="calib" id="calib"></div>
+    <div class="callout" style="margin-top:22px">
+      <div class="c-tag">Why this is the real finding</div>
+      <p>A wrong dollar figure is <b>plausible</b> — only the ledger knows it's wrong, and the judge isn't given the ledger. So a system that grades itself this way will happily trade accuracy for tone and report itself as improving. <b>The "smarter than the last execution" claim can be confidently false.</b></p>
+    </div>
+  </section>
+
+  <!-- 5. RECOMMENDATION -->
+  <section style="border-bottom:0">
+    <div class="sec-label">What I'd ship next</div>
+    <h2>Close the blind spot before trusting the optimizer.</h2>
+    <div class="recs">
+      <div class="rec">
+        <div class="r-num">01</div>
+        <h3>Ground-truth accuracy check</h3>
+        <p>Don't let an LLM guess whether a quoted figure is right. Extract every amount and date the agent states and diff it against the ledger record deterministically. Factual accuracy becomes pass/fail truth, not a plausibility score.</p>
+      </div>
+      <div class="rec">
+        <div class="r-num">02</div>
+        <h3>Per-decision audit log</h3>
+        <p>Record which value the agent quoted, its source, and the judge's verdict for every execution — so a regression like this is traceable in one query instead of surfacing in a customer dispute weeks later.</p>
+      </div>
+    </div>
+    <div class="caveat">
+      <b>Scope &amp; honesty:</b> this runs on hand-authored synthetic transcripts, not Peakflo's live system — I don't have access to it, and an applicant shouldn't pretend to. It demonstrates the <i>measurement method</i> you'd use to validate self-optimization, plus the <code class="mono">eval_harness.py</code> that produced these exact numbers (run <code class="mono">--offline</code> to reproduce them). Both recommendations map to public Peakflo customer feedback asking for accurate invoice handling and audit visibility into agent decisions.
+    </div>
+  </section>
+
+  <footer>
+    <span>Built as an application artifact · PM Intern, Agentic Workflows</span>
+    <span>method demo · synthetic data · <a href="#">harness in repo</a></span>
+  </footer>
+
+</div>
+
+<script>
+const DATA = {
+  dims:[
+    {key:"factual_accuracy",name:"Factual accuracy",note:"correct figures",v1:4.75,v2:3.75,down:true},
+    {key:"promise_capture",name:"Promise capture",note:"commitment logged",v1:2.67,v2:4.75,down:false},
+    {key:"tone_compliance",name:"Tone & compliance",note:"professional",v1:3.75,v2:4.75,down:false},
+    {key:"escalation",name:"Escalation",note:"routed correctly",v1:4.0,v2:4.0,down:false},
+    {key:"system_action",name:"System action",note:"record updated",v1:4.0,v2:4.25,down:false}
+  ],
+  calib:[
+    {key:"factual_accuracy",name:"Factual accuracy",gap:0.5,bad:true},
+    {key:"promise_capture",name:"Promise capture",gap:0.0,bad:false},
+    {key:"tone_compliance",name:"Tone & compliance",gap:0.0,bad:false},
+    {key:"escalation",name:"Escalation",gap:0.0,bad:false},
+    {key:"system_action",name:"System action",gap:0.0,bad:false}
+  ],
+  dimOrder:["factual_accuracy","promise_capture","tone_compliance","escalation","system_action"],
+  dimShort:{factual_accuracy:"Accuracy",promise_capture:"Promise",tone_compliance:"Tone",escalation:"Escal.",system_action:"Action"},
+  transcripts:[
+    {id:"v1_voice_meridian",cohort:"v1",channel:"voice",invoice:"INV-4471",
+     s:{factual_accuracy:5,promise_capture:2,tone_compliance:4,escalation:4,system_action:4},
+     rat:"Figures correct, but accepted a vague 'next week' without pinning a date or amount, so no usable commitment was captured.",
+     text:"Agent: Hi, this is the accounts team calling about invoice 4471. Our records show a balance of twelve thousand four hundred eighty dollars, now 32 days past due.\nCustomer: Right, we've had a cash crunch. We can pay it.\nAgent: Okay. When do you expect to pay?\nCustomer: Probably sometime next week.\nAgent: Understood, thank you. We'll note that. Have a good day."},
+    {id:"v1_email_cervantes",cohort:"v1",channel:"email",invoice:"INV-4503",
+     s:{factual_accuracy:5,promise_capture:3,tone_compliance:4,escalation:3,system_action:4},
+     rat:"Accurate and polite but generic; asked for payment without proposing a date, leaving the commitment open.",
+     text:"Subject: Invoice INV-4503 — balance outstanding\n\nHello, our records indicate invoice INV-4503 for $3,250.00 is 15 days past due. Please arrange payment at your earliest convenience. If payment has already been sent, kindly disregard this notice. Regards, Accounts Receivable."},
+    {id:"v1_voice_northwind",cohort:"v1",channel:"voice",invoice:"INV-4488",
+     s:{factual_accuracy:5,promise_capture:"NA",tone_compliance:3,escalation:5,system_action:4},
+     rat:"Correctly identified a dispute and routed to a human with the claim reference; tone was curt but the escalation was exactly right.",
+     text:"Agent: Calling regarding invoice 4488, balance twenty-seven thousand nine hundred dollars, 45 days overdue.\nCustomer: We're disputing that. Half of those pallets arrived damaged and we filed a claim three weeks ago.\nAgent: I see. This is a disputed invoice, so I'm routing it to a human collections specialist with your damage-claim reference. You'll hear from them within one business day.\nCustomer: Fine.\nAgent: Thank you."},
+    {id:"v1_email_atlas",cohort:"v1",channel:"email",invoice:"INV-4512",
+     s:{factual_accuracy:4,promise_capture:3,tone_compliance:4,escalation:4,system_action:4},
+     rat:"Correct figures and a reasonable ask for a date, but did not secure a concrete commitment.",
+     text:"Subject: Reminder — Invoice INV-4512\n\nHi, this is a reminder that invoice INV-4512 for $8,140.00 became due 10 days ago. Could you let us know the expected payment date? Happy to help if there are any questions about the invoice. Thanks, Accounts Receivable."},
+    {id:"v2_voice_meridian",cohort:"v2",channel:"voice",invoice:"INV-4471",
+     s:{factual_accuracy:2,promise_capture:5,tone_compliance:5,escalation:4,system_action:4},
+     rat:"Excellent warm tone and a precise dated commitment, but the quoted balance reads slightly low; figure is internally consistent so accuracy is only mildly downgraded.",
+     text:"Agent: Hi, this is Carrie from the accounts team — hope your week's going well. I'm reaching out about invoice 4471. The balance on our side is eleven thousand four hundred eighty dollars, and it's currently 32 days past due.\nCustomer: Yeah, money's been tight.\nAgent: Totally understand, it happens. Could we lock in a date that works for you?\nCustomer: Let's say the 24th.\nAgent: Perfect — so I'll record a commitment for eleven thousand four hundred eighty dollars on the 24th, and I'll send a confirmation. Thanks so much, talk soon.\n\n[ledger: balance is $12,480.00 — agent quoted $11,480.00]"},
+    {id:"v2_email_cervantes",cohort:"v2",channel:"email",invoice:"INV-4503",
+     s:{factual_accuracy:5,promise_capture:5,tone_compliance:5,escalation:4,system_action:4},
+     rat:"Accurate, warm, and proposed a concrete date with confirmation logging — a clean execution.",
+     text:"Subject: Quick note on invoice INV-4503\n\nHi there — hope you're well. Just a friendly heads-up that invoice INV-4503 for $3,250.00 is now 15 days past due. To make it easy, would the end of this week work for payment? If you reply with a date, I'll log it and send a confirmation so nothing slips. Thanks so much! — Accounts Receivable"},
+    {id:"v2_voice_northwind",cohort:"v2",channel:"voice",invoice:"INV-4488",
+     s:{factual_accuracy:3,promise_capture:4,tone_compliance:5,escalation:4,system_action:5},
+     rat:"Strong tone and commitment, but used an approximate 'around twenty-eight thousand' figure rather than a precise balance.",
+     text:"Agent: Hi, it's Carrie again following up on invoice 4488 — thanks for your patience. The outstanding balance is around twenty-eight thousand dollars, about 45 days out now.\nCustomer: We can clear it after the 1st.\nAgent: Wonderful — I'll note a commitment for after the 1st and send you a confirmation with the exact figure. Really appreciate it, have a great day.\n\n[ledger: balance is $27,900.00 — agent quoted 'around twenty-eight thousand']"},
+    {id:"v2_email_atlas",cohort:"v2",channel:"email",invoice:"INV-4512",
+     s:{factual_accuracy:5,promise_capture:5,tone_compliance:4,escalation:4,system_action:4},
+     rat:"Accurate, friendly, and secured a date-and-confirm commitment.",
+     text:"Subject: Friendly reminder — invoice INV-4512\n\nHi! Hope things are going well. A gentle reminder that invoice INV-4512 for $8,140.00 came due 10 days ago. If you can share a payment date, I'll log it right away and confirm back to you. And of course, let me know if anything about the invoice needs a second look. Thanks! — Accounts Receivable"}
+  ]
+};
+
+/* dimension bars */
+const barsEl=document.getElementById('bars');
+DATA.dims.forEach(d=>{
+  const row=document.createElement('div');row.className='brow';
+  row.innerHTML=`<div class="bname">${d.name}<small>${d.note}</small></div>
+    <div class="track">
+      <div class="bar v1" data-w="${d.v1/5*100}"></div>
+      <div class="bar v2 ${d.down?'down':''}" data-w="${d.v2/5*100}"></div>
+    </div>
+    <div class="bvals">
+      <span class="bval v1 mono">${d.v1.toFixed(2)}</span>
+      <span class="bval v2 mono ${d.down?'down':''}">${d.v2.toFixed(2)}</span>
+    </div>`;
+  barsEl.appendChild(row);
+});
+
+/* calibration gauges (max gap shown = 1.0 -> full track) */
+const calibEl=document.getElementById('calib');
+DATA.calib.forEach(c=>{
+  const row=document.createElement('div');row.className='crow';
+  row.innerHTML=`<div class="cname">${c.name}</div>
+    <div class="gauge"><span class="zero">0</span><div class="gbar ${c.bad?'bad':''}" data-w="${c.gap*100}"></div></div>
+    <div class="gval ${c.bad?'bad':''} mono">${c.gap>0?'+':''}${c.gap.toFixed(1)}</div>`;
+  calibEl.appendChild(row);
+});
+
+/* transcript rows */
+const rowsEl=document.getElementById('rows');
+DATA.transcripts.forEach(t=>{
+  const chips=DATA.dimOrder.map(k=>{
+    const v=t.s[k];
+    if(v==="NA")return `<div class="chip na" title="${k}: n/a">–</div>`;
+    const bad=(k==="factual_accuracy"&&v<=3);
+    return `<div class="chip ${bad?'bad':''}" title="${k}: ${v}">${v}</div>`;
+  }).join('');
+  const dimcards=DATA.dimOrder.map(k=>{
+    const v=t.s[k];const bad=(k==="factual_accuracy"&&v!=="NA"&&v<=3);
+    return `<div class="dim ${bad?'bad':''}"><div class="d-n">${DATA.dimShort[k]}</div><div class="d-v mono">${v==="NA"?"–":v}</div></div>`;
+  }).join('');
+  const row=document.createElement('div');row.className='trow';
+  row.innerHTML=`
+    <div class="thead" tabindex="0" role="button" aria-expanded="false">
+      <span class="caret">▶</span>
+      <div class="tmain">
+        <div class="ttop"><span class="tid">${t.id}</span>
+          <span class="pill ${t.cohort==='v2'?'v2':''}">${t.cohort}</span>
+          <span class="pill">${t.channel}</span></div>
+        <div class="trat">${t.rat}</div>
+      </div>
+      <div class="chips">${chips}</div>
+    </div>
+    <div class="tbody"><div class="tbody-in">
+      <div class="tscript">${t.text.replace(/</g,'&lt;')}</div>
+      <div class="dimgrid">${dimcards}</div>
+      <div class="full-rat">Judge: ${t.rat}</div>
+    </div></div>`;
+  const head=row.querySelector('.thead'),body=row.querySelector('.tbody');
+  const toggle=()=>{const open=row.classList.toggle('open');
+    head.setAttribute('aria-expanded',open);
+    body.style.maxHeight=open?body.firstElementChild.scrollHeight+'px':'0';};
+  head.addEventListener('click',toggle);
+  head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+  rowsEl.appendChild(row);
+});
+
+/* draw bars when scrolled into view */
+const draw=el=>el.querySelectorAll('.bar,.gbar').forEach(b=>b.style.width=b.dataset.w+'%');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+if('IntersectionObserver'in window&&!reduce){
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    e.target.classList.add('show');draw(e.target);io.unobserve(e.target);}});},{threshold:.3});
+  io.observe(barsEl);io.observe(calibEl);
+}else{[barsEl,calibEl].forEach(el=>{el.classList.add('show');draw(el);});}
+</script>
+</body>
+</html>
