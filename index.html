@@ -151,10 +151,41 @@
   @media (prefers-reduced-motion:reduce){
     .bar,.gbar{transition:none}.bval{transition:none}
   }
+
+  /* ---- orientation strip (cold-open context) ---- */
+  .intro{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;
+    padding:18px 20px;margin-top:28px;background:var(--panel);
+    border:1px solid var(--hair-strong);border-radius:3px}
+  .intro-l{min-width:0;flex:1 1 320px}
+  .intro .who{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:-.01em}
+  .intro .role{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--slate);margin:3px 0 9px}
+  .intro .what{font-size:13.5px;color:var(--slate);max-width:56ch}
+  .intro .what b{color:var(--ink);font-weight:600}
+  .intro-r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ilink{font-family:var(--mono);font-size:12px;text-decoration:none;color:var(--ink);
+    border:1px solid var(--hair-strong);border-radius:3px;padding:7px 12px;white-space:nowrap;
+    transition:background .15s,border-color .15s}
+  .ilink:hover{background:#FAF8F3;border-color:var(--slate)}
+  .ilink.read{border:0;color:var(--slate);padding:7px 2px;cursor:default}
+  .ilink.read:hover{background:none}
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <div class="intro">
+    <div class="intro-l">
+      <div class="who">Noa Lolona Haro</div>
+      <div class="role">Application · Product Manager Intern, Agentic Workflows</div>
+      <p class="what"><b>What this is:</b> a working test of whether a self-optimizing collections agent actually gets better each cycle — and a case where the headline metrics say yes but it's quietly getting worse. Built for this role, on synthetic data.</p>
+    </div>
+    <div class="intro-r">
+      <span class="ilink read">~2 min read</span>
+      <a class="ilink" href="#"><!-- replace # with your hosted résumé link -->Résumé</a>
+      <a class="ilink" href="#"><!-- replace # with your public code repo link -->Code &amp; writeup</a>
+    </div>
+  </div>
 
   <header class="run">
     <div class="runtop"><span class="dot"></span><span class="eyebrow">Eval run · passed quality gate · regression flagged</span></div>
